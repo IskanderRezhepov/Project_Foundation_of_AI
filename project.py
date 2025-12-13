@@ -239,3 +239,102 @@ def mark_path(maze, path):
             grid[r][c] = "*"
 
     return ["".join(row) for row in grid]
+
+# --- Default maze ---
+
+DEFAULT_MAZE = [
+    "###########",
+    "#S..#....G#",
+    "#.#.#.##..#",
+    "#.#...#...#",
+    "#.#####.#.#",
+    "#.......#.#",
+    "###########",
+]
+
+
+def load_maze_from_file(path):
+    with open(path, "r") as f:
+        lines = [line.rstrip("\n") for line in f if line.strip("\n")]
+
+    if len(set(len(line) for line in lines)) != 1:
+        raise ValueError("All rows in the maze file must have the same length.")
+
+    return lines
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Maze solver using BFS and DFS (pretty visual version).")
+    parser.add_argument(
+        "--algo",
+        choices=["bfs", "dfs", "both"],
+        default="both",
+        help="Which algorithm to run (default: both)."
+    )
+    parser.add_argument(
+        "--file",
+        type=str,
+        help="Path to a text file containing the maze."
+    )
+    parser.add_argument(
+        "--animate",
+        action="store_true",
+        help="Animate the exploration process step-by-step."
+    )
+    parser.add_argument(
+        "--delay",
+        type=float,
+        default=0.03,
+        help="Delay between animation frames in seconds (default: 0.03)."
+    )
+    args = parser.parse_args()
+
+    # Load maze
+    if args.file:
+        if not os.path.exists(args.file):
+            print(f"File not found: {args.file}")
+            sys.exit(1)
+        grid = load_maze_from_file(args.file)
+    else:
+        grid = DEFAULT_MAZE
+
+    maze = Maze(grid)
+
+    clear_screen()
+    print("Original maze:")
+    print_maze_pretty(maze)
+    time.sleep(0.5)
+
+    # BFS
+    if args.algo in ("bfs", "both"):
+        if args.animate:
+            clear_screen()
+        print("=== BFS ===")
+        path_bfs, explored_bfs = bfs(maze, animate=args.animate, delay=args.delay)
+        if args.animate:
+            clear_screen()
+        if path_bfs is None:
+            print("No path found by BFS.")
+        else:
+            print(f"BFS path length (number of cells): {len(path_bfs)}")
+            print_maze_pretty(maze, path=path_bfs, explored=explored_bfs, frame_title="BFS final path")
+        input("Press Enter to continue...\n")
+
+    # DFS
+    if args.algo in ("dfs", "both"):
+        if args.animate:
+            clear_screen()
+        print("=== DFS ===")
+        path_dfs, explored_dfs = dfs(maze, animate=args.animate, delay=args.delay)
+        if args.animate:
+            clear_screen()
+        if path_dfs is None:
+            print("No path found by DFS.")
+        else:
+            print(f"DFS path length (number of cells): {len(path_dfs)}")
+            print_maze_pretty(maze, path=path_dfs, explored=explored_dfs, frame_title="DFS final path")
+        # No extra input if it's the last, but fine for showing during demo
+
+
+if __name__ == "__main__":
+    main()
