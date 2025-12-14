@@ -11,3 +11,9 @@ To install `colorama` (optional):
 
 ```bash
 pip install colorama
+
+
+python project.py --algo bfs --animate
+
+
+python project.py --algo dfs --animate
